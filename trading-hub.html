@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Trading Strategy Automation Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-alt: #151a2b;
+      --card: #171f33;
+      --accent: #4f8cff;
+      --accent-soft: rgba(79, 140, 255, 0.12);
+      --text: #f5f7ff;
+      --muted: #a0a7c2;
+      --border: #252b3f;
+      --danger: #ff4b6a;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #182341 0, #050814 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-block h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.03em;
+    }
+
+    .title-block p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .nav {
+      display: flex;
+      padding: 4px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border);
+      gap: 4px;
+    }
+
+    .nav button {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .nav button.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 12px 30px rgba(79, 140, 255, 0.7);
+    }
+
+    main {
+      border-radius: var(--radius-lg);
+      background: radial-gradient(circle at top left, #1f2937 0, #020617 65%);
+      padding: 18px 18px 26px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 {
+      font-size: 1rem;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+
+    .pill {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #101827, #050816);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(
+        circle at top,
+        rgba(79, 140, 255, 0.07),
+        transparent 60%
+      );
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .card-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 6px;
+    }
+
+    .card h3 {
+      margin: 0;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .subtext {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .checklist {
+      margin-top: 8px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 0.86rem;
+      margin-bottom: 6px;
+    }
+
+    .checklist-item input[type="checkbox"] {
+      margin-top: 2px;
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent);
+    }
+
+    .note-input {
+      margin-top: 6px;
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      resize: vertical;
+      min-height: 40px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 0.75rem;
+    }
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .badge-success {
+      border-color: rgba(34, 197, 94, 0.4);
+      color: var(--success);
+    }
+    .badge-danger {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: var(--danger);
+    }
+    .badge-warning {
+      border-color: rgba(245, 158, 11, 0.4);
+      color: var(--warning);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.8rem;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.9);
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    td input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.16s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border-color: transparent;
+    }
+
+    .btn-danger {
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, 0.5);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .meta-row span {
+      opacity: 0.9;
+    }
+
+    .headline-input {
+      width: 100%;
+      margin-top: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 14px;
+      }
+      header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .title-block h1 {
+        font-size: 1.3rem;
+      }
+      .nav {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title-block">
+        <h1>Strategy Automation Hub</h1>
+        <p>Daily playbook · Strategy selection · Review loops</p>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-target="dashboard">
+          Dashboard
+        </button>
+        <button class="nav-btn" data-target="daily">Daily Playbook</button>
+        <button class="nav-btn" data-target="strategies">
+          Strategy Library
+        </button>
+        <button class="nav-btn" data-target="review">Review Hub</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="section active">
+        <h2>
+          Dashboard
+          <span class="pill">Today</span>
+        </h2>
+        <div class="grid">
+          <!-- Card: Market Regime -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Market Regime</h3>
+              <span class="tag">Context</span>
+            </div>
+            <p class="subtext">
+              Quick read of today’s environment before you turn any strategy ON.
+            </p>
+            <div class="meta-row">
+              <span>Trend bias: Trend ☐ / Range ☐ / Choppy ☐</span>
+              <span>Vol: High ☐ / Normal ☐ / Low ☐</span>
+              <span>News: Major ☐ / None ☐</span>
+            </div>
+            <textarea
+              class="note-input"
+              data-note-id="dashboard_market_notes"
+              placeholder="Notes: overnight move, big levels, earnings, FOMC, etc..."
+            ></textarea>
+          </div>
+
+          <!-- Card: Mental & Risk -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Mental Capital & Risk</h3>
+              <span class="tag">You</span>
+            </div>
+            <p class="subtext">
+              Gatekeeper: no strategy is allowed if this card is red.
+            </p>
+            <div class="checklist">
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_sleep_ok" />
+                <span>Sleep score checked &gt; 5/10, or you sized down.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_mental_ok" />
+                <span>
+                  Mental clarity ≥ 4/10, no extreme manic/depressed state.
+                </span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_box_breathing" />
+                <span>Box breathing done (10 rounds before trading).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_max_loss_set" />
+                <span>
+                  Max daily loss set and written down (account / points).
+                </span>
+              </label>
+            </div>
+            <div class="badge-row">
+              <span class="badge badge-success">Rule: mental gate first</span>
+              <span class="badge badge-warning"
+                >If any box is OFF → reduce or skip</span
+              >
+            </div>
+          </div>
+
+          <!-- Card: Strategies Allowed Today -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Strategies Allowed Today</h3>
+              <span class="tag">Routing</span>
+            </div>
+            <p class="subtext">
+              Decide which modules are live before the open. No mid-day improvising.
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Strategy</th>
+                  <th>On</th>
+                  <th>Reduced</th>
+                  <th>Off</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    VWAP 3-Bar Flush / Pop
+                  </td>
+                  <td><input type="checkbox" id="s1_on" /></td>
+                  <td><input type="checkbox" id="s1_reduced" /></td>
+                  <td><input type="checkbox" id="s1_off" /></td>
+                </tr>
+                <tr>
+                  <td>VWAP Reversion / Bands</td>
+                  <td><input type="checkbox" id="s2_on" /></td>
+                  <td><input type="checkbox" id="s2_reduced" /></td>
+                  <td><input type="checkbox" id="s2_off" /></td>
+                </tr>
+                <tr>
+                  <td>Opening Breakdown / Trend</td>
+                  <td><input type="checkbox" id="s3_on" /></td>
+                  <td><input type="checkbox" id="s3_reduced" /></td>
+                  <td><input type="checkbox" id="s3_off" /></td>
+                </tr>
+              </tbody>
+            </table>
+            <textarea
+              class="note-input"
+              data-note-id="dashboard_strat_notes"
+              placeholder="Why each strategy is ON/OFF today..."
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- DAILY PLAYBOOK -->
+      <section id="daily" class="section">
+        <h2>
+          Daily Playbook
+          <span class="pill">Pre-market & live trades</span>
+        </h2>
+
+        <div class="grid">
+          <!-- Pre-market self & risk -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Pre-Market: Self & Risk</h3>
+              <span class="tag">Checklist</span>
+            </div>
+            <div class="checklist">
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_sleep_logged" />
+                <span>Sleep score logged (0–10).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_bipolar_logged" />
+                <span>Mental / bipolar score logged (0–10).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_physical_state" />
+                <span>Physical state checked (sick, hungover, etc.).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_contract_rules" />
+                <span>Contract size rules confirmed (max MNQ/NQ size).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_notional_checked" />
+                <span>Notional per contract checked for main product.</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Market condition scan -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Pre-Market: Market Condition</h3>
+              <span class="tag">Context</span>
+            </div>
+            <div class="checklist">
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_htf_trend" />
+                <span>HTF (H4/Daily) trend marked: up / down / sideways.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_extremes" />
+                <span>Check if we’re at major extremes (weekly/monthly high/low).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_gap_context" />
+                <span>Overnight gap vs prior close (big up / big down / flat).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_adr_vol" />
+                <span>ATR / implied vol read: high / normal / low.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="pm_news_calendar" />
+                <span>News calendar checked (FOMC, CPI, jobs, big earnings).</span>
+              </label>
+            </div>
+            <textarea
+              class="note-input"
+              data-note-id="daily_market_notes"
+              placeholder="Market notes for today: structure, levels, VWAP interaction, etc."
+            ></textarea>
+          </div>
+
+          <!-- Per-Trade checklist -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Per-Trade Checklist</h3>
+              <span class="tag">Execution</span>
+            </div>
+            <p class="subtext">
+              Run this before every entry. If any answer is “no”, skip the trade.
+            </p>
+            <div class="checklist">
+              <label class="checklist-item">
+                <input type="checkbox" id="trade_setup_labeled" />
+                <span>Setup clearly labeled (e.g. VWAP 3-Bar Flush short / pop long).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="trade_structure_ok" />
+                <span>Structure fits the rule (above/below VWAP + 3-bar pattern).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="trade_volume_ok" />
+                <span>Volume/context acceptable (not dead chop, not random spike).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="trade_hard_stop_set" />
+                <span>Hard stop placed immediately (points or price).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="trade_size_within_rules" />
+                <span>Contract size within your rules (no “hero” size).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="trade_future_self_question" />
+                <span>
+                  Future-self check: “If I was already a Viking / up 5k, would I take this trade?”
+                </span>
+              </label>
+            </div>
+            <textarea
+              class="note-input"
+              data-note-id="daily_trade_notes"
+              placeholder="Optional: write the trade thesis (structure + probability, not fantasy)."
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- STRATEGY LIBRARY -->
+      <section id="strategies" class="section">
+        <h2>
+          Strategy Library
+          <span class="pill">Playbook</span>
+        </h2>
+        <div class="grid">
+          <!-- VWAP 3-Bar Flush / Pop -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>VWAP 3-Bar Flush / Pop (Bi-Directional)</h3>
+              <span class="tag">Core</span>
+            </div>
+            <p class="subtext">
+              Captures impulsive moves away from VWAP after a 3-bar sequence, then rides the move with
+              strict hard stop and optional trailing logic.
+            </p>
+            <h3>Short Setup</h3>
+            <ul class="checklist">
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Price is below VWAP.</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• 3 consecutive bars making lower lows (flush pattern).</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Volume/footprint confirms aggression (no sleepy tape).</span>
+              </li>
+            </ul>
+
+            <h3>Long Setup</h3>
+            <ul class="checklist">
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Price is above VWAP.</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• 3 consecutive bars making higher highs (pop pattern).</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Volume confirms buyers in control.</span>
+              </li>
+            </ul>
+
+            <h3>Best Environment</h3>
+            <div class="badge-row">
+              <span class="badge badge-success">Trend / strong intraday move</span>
+              <span class="badge">Clear one-sided pressure</span>
+              <span class="badge">VWAP respected as pivot</span>
+            </div>
+
+            <h3>No-Trade Filters</h3>
+            <div class="badge-row">
+              <span class="badge badge-danger">Tiny lunchtime chop</span>
+              <span class="badge badge-danger">Price glued to VWAP</span>
+              <span class="badge badge-warning">Big news within 5–10 minutes</span>
+            </div>
+          </div>
+
+          <!-- VWAP Reversion / Band Strategy -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>VWAP Reversion / Bands</h3>
+              <span class="tag">Mean Reversion</span>
+            </div>
+            <p class="subtext">
+              Fade stretches to VWAP ± bands when the day is more balanced/rangy than trendy.
+            </p>
+            <h3>Core Logic</h3>
+            <ul class="checklist">
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Identify upper/lower VWAP bands (e.g. stdev).</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Look for exhaustion at bands (wicks, failed pushes, footprint absorption).</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Target is reversion toward VWAP, with tight risk.</span>
+              </li>
+            </ul>
+            <h3>Best Environment</h3>
+            <div class="badge-row">
+              <span class="badge badge-success">Range / mean-reverting day</span>
+              <span class="badge">Both sides respected</span>
+              <span class="badge">No one-way trend melt</span>
+            </div>
+            <h3>No-Trade Filters</h3>
+            <div class="badge-row">
+              <span class="badge badge-danger">Strong trend day</span>
+              <span class="badge badge-warning">Post-news spike still expanding</span>
+            </div>
+          </div>
+
+          <!-- Opening Breakdown / Trend -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Opening Breakdown / Trend</h3>
+              <span class="tag">Momentum</span>
+            </div>
+            <p class="subtext">
+              Optional module for when the open clearly picks a direction and never looks back.
+            </p>
+            <h3>Core Logic</h3>
+            <ul class="checklist">
+              <li class="checklist-item" style="list-style: none;">
+                <span>• Strong gap in one direction.</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• First 30–60 minutes show clean continuation, not whipsaw.</span>
+              </li>
+              <li class="checklist-item" style="list-style: none;">
+                <span>• ES/NQ and breadth aligned.</span>
+              </li>
+            </ul>
+            <h3>Best Environment</h3>
+            <div class="badge-row">
+              <span class="badge badge-success">Trend day potential</span>
+              <span class="badge">Strong news catalyst</span>
+            </div>
+            <h3>No-Trade Filters</h3>
+            <div class="badge-row">
+              <span class="badge badge-danger">Choppy open</span>
+              <span class="badge badge-warning">Inside day / tiny range</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REVIEW HUB -->
+      <section id="review" class="section">
+        <h2>
+          Review Hub
+          <span class="pill">Daily & weekly</span>
+        </h2>
+        <div class="grid">
+          <!-- Daily Review -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>End-of-Day Review</h3>
+              <span class="tag">Daily</span>
+            </div>
+            <div class="checklist">
+              <label class="checklist-item">
+                <input type="checkbox" id="eod_pnl_logged" />
+                <span>PnL logged by account & strategy.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="eod_dd_checked" />
+                <span>Max drawdown vs daily limit reviewed.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="eod_trades_counted" />
+                <span>Number of trades vs plan counted.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="eod_rules_respected" />
+                <span>Confirmed: only traded strategies that were ON this morning.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="eod_sl_respected" />
+                <span>Hard stops respected (no remove / widen in tilt).</span>
+              </label>
+            </div>
+            <h3>Key Wins (Process / Behavior)</h3>
+            <textarea
+              class="note-input"
+              data-note-id="eod_wins"
+              placeholder="List 2–3 things you did well today..."
+            ></textarea>
+            <h3>Areas to Improve</h3>
+            <textarea
+              class="note-input"
+              data-note-id="eod_improve"
+              placeholder="1–2 specific changes for tomorrow..."
+            ></textarea>
+            <h3>Headline for the Day</h3>
+            <input
+              class="headline-input"
+              data-note-id="eod_headline"
+              placeholder="Example: Controlled the loss instead of letting it explode."
+            />
+          </div>
+
+          <!-- Weekly Review -->
+          <div class="card">
+            <div class="card-title-row">
+              <h3>Weekly Review</h3>
+              <span class="tag">Weekly</span>
+            </div>
+            <div class="checklist">
+              <label class="checklist-item">
+                <input type="checkbox" id="week_pnl_by_strat" />
+                <span>Weekly PnL broken down by strategy.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="week_trades_by_strat" />
+                <span>Number of trades per strategy counted.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="week_winrate_r" />
+                <span>Winrate & average R per strategy reviewed.</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="week_rule_violations" />
+                <span>Rule violations tallied (off-plan trades, night trades, etc.).</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="week_market_regimes" />
+                <span>Market regimes labeled (trend / range / choppy) per day.</span>
+              </label>
+            </div>
+            <h3>What Paid / What Cost Me</h3>
+            <textarea
+              class="note-input"
+              data-note-id="week_paid_cost"
+              placeholder="Which modules made money? Which ones were emotional or unprofitable?"
+            ></textarea>
+            <h3>Plan for Next Week</h3>
+            <textarea
+              class="note-input"
+              data-note-id="week_plan"
+              placeholder="Strategies to prioritize / pause, behavior rules to emphasize..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-danger" id="resetDayBtn">
+            🔁 Reset today’s checkboxes
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Simple tab navigation
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const sections = document.querySelectorAll(".section");
+
+    navButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.getAttribute("data-target");
+        navButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        sections.forEach((sec) => {
+          sec.classList.toggle("active", sec.id === target);
+        });
+      });
+    });
+
+    // Persistent state for checkboxes + notes
+    const STORAGE_KEY_CHECKS = "tradingHub_checks_v1";
+    const STORAGE_KEY_NOTES = "tradingHub_notes_v1";
+
+    function loadChecks() {
+      const raw = localStorage.getItem(STORAGE_KEY_CHECKS);
+      if (!raw) return;
+      let state;
+      try {
+        state = JSON.parse(raw);
+      } catch {
+        return;
+      }
+      document
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach((cb) => {
+          if (state[cb.id] !== undefined) {
+            cb.checked = state[cb.id];
+          }
+        });
+    }
+
+    function saveChecks() {
+      const state = {};
+      document
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach((cb) => {
+          if (cb.id) state[cb.id] = cb.checked;
+        });
+      localStorage.setItem(STORAGE_KEY_CHECKS, JSON.stringify(state));
+    }
+
+    function loadNotes() {
+      const raw = localStorage.getItem(STORAGE_KEY_NOTES);
+      if (!raw) return;
+      let state;
+      try {
+        state = JSON.parse(raw);
+      } catch {
+        return;
+      }
+      document
+        .querySelectorAll("[data-note-id]")
+        .forEach((el) => {
+          const id = el.getAttribute("data-note-id");
+          if (state[id] !== undefined) {
+            el.value = state[id];
+          }
+        });
+    }
+
+    function saveNotes() {
+      const state = {};
+      document
+        .querySelectorAll("[data-note-id]")
+        .forEach((el) => {
+          const id = el.getAttribute("data-note-id");
+          state[id] = el.value;
+        });
+      localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(state));
+    }
+
+    // Attach listeners
+    document
+      .querySelectorAll('input[type="checkbox"]')
+      .forEach((cb) => cb.addEventListener("change", saveChecks));
+
+    document
+      .querySelectorAll("[data-note-id]")
+      .forEach((el) =>
+        el.addEventListener("input", () => {
+          // debounce-ish
+          clearTimeout(el._saveTimer);
+          el._saveTimer = setTimeout(saveNotes, 300);
+        })
+      );
+
+    // Reset daily checkboxes (but keep weekly + notes)
+    document.getElementById("resetDayBtn").addEventListener("click", () => {
+      if (!confirm("Reset today’s checkboxes? Notes will be kept.")) return;
+      const dailyIdsPrefix = [
+        "pm_",
+        "trade_",
+        "eod_",
+        "s1_",
+        "s2_",
+        "s3_",
+        "week_" // comment this line out if you don't want weekly boxes reset
+      ];
+
+      document
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach((cb) => {
+          if (
+            dailyIdsPrefix.some((prefix) => cb.id.startsWith(prefix)) ||
+            cb.id.includes("pm")
+          ) {
+            cb.checked = false;
+          }
+        });
+      saveChecks();
+    });
+
+    // Initial load
+    loadChecks();
+    loadNotes();
+  </script>
+</body>
+</html>
